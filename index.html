@@ -12,9 +12,9 @@
     <script src="jsapi.js"></script>
   </head>
   <body>
-    Download will start automatically. If it doesn't click 'Download'<br>
-    <a id="a" href="#">Download</a><br><br><br>
-    The file name is in the format YYYYMMDDhhmm.json where 'Y' means 'Year', 'M' means 'Month', 'D' means 'Date', 'h' means 'hour', and 'm' means 'minute', 
+    <div id="barrier" style="width: 100%; height: 100%; position: fixed; left: 0%; top: 0%; background-color: rgba(0, 0, 0, 0); z-index: 99;" hidden></div>
+    <button id="export">Export Data</button>
+    <button onclick="document.getElementById('importFile').click()">Import Data<input type="file" id="importFile" style="display: none"></button>
   </body>
   <script src="code.js"></script>
 </html>
