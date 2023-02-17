@@ -147,30 +147,38 @@ document.getElementById("exportCSV").onclick = function() {
     })
 }
 document.getElementById("importFile").oninput = function(file) {
-    message("Importing", 0)
-    let result;
-    let fr=new FileReader();
-    fr.readAsText(this.files[0]);
-    fr.onload=function() {
-        result = JSON.parse(fr.result);
-        readRecords("attendance", {}, function(records) {
-            let x = 0;
-            while (x < records.length) {
-                deleteRecord("attendance", {id:records[x].id}, function(success) {
-                });
-                x += 1;
-            }
-            let i = 0;
-            let imported = 0;
-            while (i < result.length) {
-                createRecord("attendance", {absentee: result[i].absentee, class: result[i].class, date: result[i].date, initial: result[i].initial, lesson: result[i].lesson, period: result[i].period, section: result[i].section, subject: result[i].subject, time: result[i].time}, function(record) {
-                    imported+= 1;
-                    if (imported >= result.length) {
-                        message("Successfully Imported", 0)
+    if (file.target.files[0].name.slice(file.target.files[0].name.lastIndexOf("."), file.target.files[0].name.length) == ".json") {
+        message("Importing", 0)
+        let result;
+        let fr=new FileReader();
+        fr.readAsText(this.files[0]);
+        fr.onload=function() {
+            result = JSON.parse(fr.result);
+            if (result.length != 0) {
+                readRecords("attendance", {}, function(records) {
+                    let x = 0;
+                    while (x < records.length) {
+                        deleteRecord("attendance", {id:records[x].id}, function(success) {
+                        });
+                        x += 1;
                     }
-                });
-                i += 1;
+                    let i = 0;
+                    let imported = 0;
+                    while (i < result.length) {
+                        createRecord("attendance", {absentee: result[i].absentee, class: result[i].class, date: result[i].date, initial: result[i].initial, lesson: result[i].lesson, period: result[i].period, section: result[i].section, subject: result[i].subject, time: result[i].time}, function(record) {
+                            imported+= 1;
+                            if (imported >= result.length) {
+                                message("Successfully Imported", 0)
+                            }
+                        });
+                        i += 1;
+                    }
+                })
+            } else {
+                message("Import failed\nNothing to import.")
             }
-        })
+        }
+    } else {
+        message(file.target.files[0].name.slice(file.target.files[0].name.lastIndexOf("."), file.target.files[0].name.length) + " files are not supported\nOnly .json files are supported.")
     }
 }
