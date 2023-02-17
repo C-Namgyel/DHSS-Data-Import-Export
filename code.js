@@ -33,8 +33,12 @@ function message(placeHolder, enableSeconds, id) {
     div.style.backgroundColor = "white"
     div.style.zIndex = "150"
     div.style.padding ="5%"
+    div.style.maxHeight = "50%"
+    div.style.overflow = "auto"
+    div.style.overflowWrap = "break-word"
+    div.style.scrollBehavior = "smooth"
     let label = document.createElement("label")
-    label.innerHTML = placeHolder,
+    label.innerHTML = placeHolder.replaceAll("\n", "<br>")
     label.style.display = "inline-block"
     label.style.width = "100%";
     let ok = document.createElement("button");
@@ -53,7 +57,6 @@ function message(placeHolder, enableSeconds, id) {
     div.appendChild(ok)
     document.body.appendChild(div)
     div.style.top = (((window.getComputedStyle(document.body).height).slice(0,this.length - 2) / 2) - (div.clientHeight / 2)) + "px"
-    document.getElementById("barrier").hidden = false;
     if (enableSeconds < 0) {
         ok.hidden = true;
     } else if (enableSeconds == 0 || enableSeconds == undefined) {
@@ -74,9 +77,8 @@ function message(placeHolder, enableSeconds, id) {
     }
     ok.onclick = function() {
         div.remove()
-        document.getElementById("barrier").hidden = true;
     }
-  }
+}
 //Import
 document.getElementById("export").onclick = function() {
     message(`Exporting. <br>Download will start automatically.<br>
@@ -86,6 +88,61 @@ document.getElementById("export").onclick = function() {
         let a = document.createElement("a")
         a.href = URL.createObjectURL(file)
         a.download = fileName()+".json"
+        a.click()
+    })
+}
+document.getElementById("exportCSV").onclick = function() {
+    message(`Exporting. <br>Download will start automatically.<br>
+    The file name is in the format YYYYMMDDhhmm.csv where 'Y' means 'Year', 'M' means 'Month', 'D' means 'Date', 'h' means 'hour', and 'm' means 'minute'`)
+    readRecords("attendance", {}, function(records) {
+        let json4csv = []
+        for (j = 0; j < records.length; j++) {
+            let h = 0;
+            do {
+                if (JSON.parse(records[j].absentee)[h] != undefined) {
+                    json4csv.push({
+                        date:records[j].date.replaceAll(":", "/"),
+                        time:records[j].time,
+                        class:records[j].class,
+                        section:records[j].section,
+                        period:records[j].period,
+                        subject:records[j].subject,
+                        lesson:records[j].lesson,
+                        absentee:JSON.parse(records[j].absentee)[h].name,
+                        reason:JSON.parse(records[j].absentee)[h].reason,
+                        initial:records[j].initial
+                    })
+                } else {
+                    json4csv.push({
+                        date:records[j].date.replaceAll(":", "/"),
+                        time:records[j].time,
+                        class:records[j].class,
+                        section:records[j].section,
+                        period:records[j].period,
+                        subject:records[j].subject,
+                        lesson:records[j].lesson,
+                        absentee:"",
+                        reason:"",
+                        initial:records[j].initial
+                    })
+                }
+                h += 1;
+            } while (h < JSON.parse(records[j].absentee).length)
+        }
+        var fields = Object.keys(json4csv[0])
+        var replacer = function(key, value) { return value === null ? '' : value } 
+        var csv = json4csv.map(function(row){
+            return fields.map(function(fieldName){
+                return JSON.stringify(row[fieldName], replacer)
+            }).join(',')
+        })
+        csv.unshift(fields.join(',')) // add header column
+        csv = csv.join('\r\n');
+        console.log(csv)
+        let file = new Blob([csv], {type: 'text/plain'});
+        let a = document.createElement("a")
+        a.href = URL.createObjectURL(file)
+        a.download = fileName()+".csv"
         a.click()
     })
 }
